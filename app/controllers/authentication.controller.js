@@ -9,7 +9,8 @@ exports.signup = (req, res) => {
   } else {
     var newUser = new User({
       email: req.body.email,
-      password: req.body.password
+      password: req.body.password,
+      goal: 10
     });
 
     // save the user

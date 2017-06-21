@@ -17,15 +17,35 @@ exports.getOrders = (req, res) => {
   });
 }
 
+exports.getOrdersByUserId = (req, res) => {
+  Order.find().count().exec((err, orders) => {
+    if (err) {
+      res.status(500).send(err);
+    }
+    res.json({ orders });
+  });
+}
+
+exports.getWeeklyOrderCountByUserId = (req, res) => {
+  console.log(req.user._id);
+  Order.find({ user_id: req.user._id }).count().exec((err, orders) => {
+    if (err) {
+      res.status(500).send(err);
+    }
+    res.json({ orders });
+  });
+}
+
 /**
  * Save a order
  * @param req
  * @param res
  * @returns void
  */
-exports.addOrder = (req, res) => {
+exports.addOrder = (req, res, next) => {
   if (!req.body.order.firstName) {
-    res.status(403).end();
+    res.status(403).json({"userMessage":"Please fill out the entire form"});
+    return next();
   }
 
   const newOrder = new Order(req.body.order);
@@ -47,6 +67,7 @@ exports.addOrder = (req, res) => {
   newOrder.save((err, saved) => {
     if (err) {
       res.status(500).send(err);
+      next(err);
     }
     res.json({ userMessage: saved });
   });
@@ -80,8 +101,16 @@ exports.updateOrder = (req, res) => {
     }
 
     // Let's sanitize inputs
-  order.content = sanitizeHtml(req.body.content);
-  // newOrder.group_id = sanitizeHtml(req.body.group_id);
+  order.firstName = sanitizeHtml(req.body.order.firstName);
+  order.lastName = sanitizeHtml(req.body.order.lastName);
+  order.phone = sanitizeHtml(req.body.order.phone);
+  order.email = sanitizeHtml(req.body.order.email);
+  order.address1 = sanitizeHtml(req.body.order.address1);
+  order.address2 = sanitizeHtml(req.body.order.address2);
+  order.city = sanitizeHtml(req.body.order.city);
+  order.state = sanitizeHtml(req.body.order.state);
+  order.zipcode = sanitizeHtml(req.body.order.zipcode);
+  order.location = order.location;
   order.save((err, saved) => {
     if (err) {
       res.status(500).send(err);
